@@ -319,6 +319,7 @@ class V6 : Spectrum
             } while (!$this.GetYesNo())
 
             # Begin inspection of the device type
+            Write-Host "`n** Beginning Visual Inspection of SN $($this.Serial_Number)"
             
             # Copy results of visual inspection to clipboard
             Set-Clipboard -Value $resultsForClipboard

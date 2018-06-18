@@ -36,5 +36,5 @@ function De-Dent([string[]]$text) {
     $i = $text | % { $_ -match "^(\s*)" | Out-Null 
                      $Matches[1].Length  } | sort | select -First 1
 
-    $text.Split([Environment]::NewLine) -replace "^\s{$i}" -join [Environment]::NewLine
+    $text.Split("`n") -replace "^\s{$i}" -join "`n"
 }
