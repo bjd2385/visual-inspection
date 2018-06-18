@@ -1,0 +1,8 @@
+TODO.txt
+
+:Author: brandon
+:Email: brandon@ideapad
+:Date: 2018-06-18 09:36
+
+1) Implement logging functionality, e.g. when inputing a SN and saving visual inspection results.
+2) Refine SN ranges.

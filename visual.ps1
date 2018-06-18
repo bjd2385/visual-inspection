@@ -3,6 +3,9 @@
 # ITP 35022-SVC rev. D.
 
 
+using namespace System.Collections
+
+
 $welcome = "
     ____             __               __  __           ____  __                       
    / __ )____ __  __/ /____  _____   / / / /__  ____ _/ / /_/ /_  _________ _________ 
@@ -96,6 +99,11 @@ class Spectrum
         throw("Must override this method.")
     }
 
+    [void] Start()
+    {
+        throw("Must override this method.")
+    }
+
     [int] GetDeviceType()
     {
         <#
@@ -105,7 +113,7 @@ class Spectrum
         Because Baxter's infusion devices are either recertified, repaired, or
         loaned, this function acquires this information from the end-user (evaluator).
         #>
-        $prompt = dedent("Select one of the following:
+        $prompt = De-Dent("Select one of the following:
 
             1 | Repair
             2 | Recertification
@@ -178,7 +186,7 @@ class Spectrum
                 continue
             }
 
-            # TODO: Add more conditions as necessary
+            # TODO: Add more initial conditions as necessary
 
             break
         }
@@ -216,27 +224,32 @@ class Spectrum
         .SYNOPSIS 
         Get the serial number of the device from user in shell.        
         #>
-        $input_SNs = New-Object System.Collections.ArrayList
+        $input_SNs = New-Object ArrayList
+        $loop = $true
 
-        while ($true) 
+        while ($loop) 
         {
             # Get the SN of the device as input `$SN_redundancy_check` number of times
-            foreach ($i in 1..$global:SN_redundancy_check)
-            {
+            do {
                 $this.Serial_Number = $this.GetProperSNInput()
                 $input_SNs.Add($this.Serial_Number)
 
                 # At each step, if there's a discrepancy, restart the loop
                 if (($input_SNs | Select -Unique).Count -ne 1) 
                 {
-                    Write-Warning "** SN mismatch - enter again"
-                    $input_SNs = New-Object System.Collections.ArrayList
+                    Write-Warning "** SN mismatch - start again"
+                    $input_SNs = New-Object ArrayList
                     break   # start over with the first SN
                 }
-            }
+
+                if ($input_SNs.Length -eq $global:SN_redundancy_check)
+                {
+                    $loop = $false
+                }
+            } until ($input_SNs.Length -eq $global:SN_redundancy_check)
         }
 
-        return $input_SNs
+        return $input_SNs[0]
     }
 
     [pscustomobject] Get_ITP_35022_SVC_Questions([String] $file_name) {
@@ -291,6 +304,7 @@ class V6 : Spectrum
     [void] Start()
     {
         <#
+        .SYNOPSIS
         Main loop of visual inspection.
         #>
         $resultsForClipboard = ""
@@ -299,13 +313,20 @@ class V6 : Spectrum
         {
             $this.Serial_Number = $this.GetSerialNumber()
             $this.Device_Type = $this.GetDeviceType()
+
+            # Begin inspection of the device type
             
             # Copy results of visual inspection to clipboard
             Set-Clipboard -Value $resultsForClipboard
             
-            dedent "           
+            De-Dent "           
             $([Environment]::NewLine) ** Copied results to clipboard. 
             You may begin another inspection" | Out-String
+
+            if (!$this.GetYesNo()) {
+                "$([Environment]::NewLine)** Exiting" | Out-String
+                exit
+            }
         }
     }
 }
@@ -328,6 +349,11 @@ class V8 : Spectrum
         # TODO: Refine these ranges
         return $serial_number -gt 2000000
     }
+
+    [void] Start()
+    {
+
+    }
 }
 
 
@@ -348,6 +374,11 @@ class V9 : Spectrum
         # TODO: Refine these ranges
         return $serial_number -gt 3000000        
     }
+
+    [void] Start()
+    {
+
+    }
 }
 
 
@@ -363,7 +394,7 @@ function GetDeviceVersion {
     (6/17/2018) Make an exception for V9.
     #>
     [OutputType([string])]
-    $prompt = dedent "    Select the proper device version by typing [1|2|3]:
+    $prompt = De-Dent "    Select the proper device version by typing [1|2|3]:
     
     1 | V6
     2 | V8

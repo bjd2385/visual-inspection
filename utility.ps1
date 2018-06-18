@@ -1,6 +1,33 @@
 # Utility/helper functions
 
-function dedent([string[]]$text) {
+function Write-Log {
+    <#
+    .SYNOPSIS
+    Log data to a file.
+    .DESCRIPTION
+    Retrieved from https://blog.ipswitch.com/how-to-build-a-logging-function-in-powershell.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ValidateSet('Information','Warning','Error')]
+        [string]$Severity = 'Information'
+    )
+              
+    [pscustomobject]@{
+        Time = (Get-Date -f g)
+        Message = $Message
+        Severity = $Severity
+    } | Export-Csv -Path "log.csv" -Append -NoTypeInformation
+}
+
+
+function De-Dent([string[]]$text) {
     <#
     .SYNOPSIS
     Provide basic functionality of Python's `textwrap.dedent` function on multi-line
