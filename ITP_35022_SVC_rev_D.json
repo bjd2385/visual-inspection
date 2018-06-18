@@ -1,0 +1,11 @@
+{
+    "Questions": [
+        {
+            "Keypad" : [
+                "lifted" : "Is the Keypad lifted next to the '3' key?",
+                "lifted'" : "Is the Keypad lifted about the perimeter?",
+                "lifted''" : 
+            ]
+        }
+    ]
+}
