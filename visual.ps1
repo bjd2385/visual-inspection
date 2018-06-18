@@ -7,11 +7,11 @@ using namespace System.Collections
 
 
 $welcome = "
-    ____             __               __  __           ____  __                       
-   / __ )____ __  __/ /____  _____   / / / /__  ____ _/ / /_/ /_  _________ _________ 
-  / __  / __  / |/_/ __/ _ \/ ___/  / /_/ / _ \/ __  / / __/ __ \/ ___/ __  / ___/ _ \
- / /_/ / /_/ />  </ /_/  __/ /     / __  /  __/ /_/ / / /_/ / / / /__/ /_/ / /  /  __/
-/_____/\__,_/_/|_|\__/\___/_/     /_/ /_/\___/\__,_/_/\__/_/ /_/\___/\__,_/_/   \___/
+    ____             __  
+   / __ )____ __  __/ /____  _____
+  / __  / __  / |/_/ __/ _ \/ ___/
+ / /_/ / /_/ />  </ /_/  __/ /  
+/_____/\__,_/_/|_|\__/\___/_/
                                 
 
 ITP 35022-SVC rev. D - Visual Inspection
@@ -113,13 +113,11 @@ class Spectrum
         Because Baxter's infusion devices are either recertified, repaired, or
         loaned, this function acquires this information from the end-user (evaluator).
         #>
-        $prompt = De-Dent("Select one of the following:
+        $prompt = De-Dent "        `nSelect one of the following:
 
             1 | Repair
             2 | Recertification
-            3 | Rental
-
-        ")
+            3 | Rental`n`n"
         $decision = 0
         $iterate = $true
 
@@ -136,19 +134,19 @@ class Spectrum
             {
                 { [DeviceCategory]::REPAIR }
                     { 
-                        "Selected Repair" | Out-String -NoNewline
+                        Write-Host "`nSelected Repair"
                         $iterate = $false
                         break 
                     }
                 { [DeviceCategory]::RECERT } 
                     { 
-                        "Selected Recert" | Out-String -NoNewline
+                        Write-Host "`nSelected Recert"
                         $iterate = $false
                         break 
                     }
                 { [DeviceCategory]::RENTAL }
                     { 
-                        "Selected Rental" | Out-String -NoNewline
+                        Write-Host "`nSelected Rental"
                         $iterate = $false
                         break 
                     }
@@ -206,7 +204,7 @@ class Spectrum
         #>
         $regex = "^[yY](es)*"
 
-        $in = Read-Host -Prompt "Continue? [y|n]"
+        $in = Read-Host -Prompt "`nContinue? [y|n]"
         
         if ($in -match $regex)
         {
@@ -214,6 +212,7 @@ class Spectrum
         }
         else
         {
+            "`n" | Out-String
             return $false
         }
     }
@@ -230,7 +229,8 @@ class Spectrum
         while ($loop) 
         {
             # Get the SN of the device as input `$SN_redundancy_check` number of times
-            do {
+            while ($input_SNs.Count -lt $global:SN_redundancy_check)
+            {
                 $this.Serial_Number = $this.GetProperSNInput()
                 $input_SNs.Add($this.Serial_Number)
 
@@ -239,14 +239,14 @@ class Spectrum
                 {
                     Write-Warning "** SN mismatch - start again"
                     $input_SNs = New-Object ArrayList
-                    break   # start over with the first SN
+                    break
                 }
 
-                if ($input_SNs.Length -eq $global:SN_redundancy_check)
+                if ($input_SNs.Count -eq $global:SN_redundancy_check)
                 {
                     $loop = $false
                 }
-            } until ($input_SNs.Length -eq $global:SN_redundancy_check)
+            }  
         }
 
         return $input_SNs[0]
@@ -311,8 +311,12 @@ class V6 : Spectrum
 
         while ($true)
         {
-            $this.Serial_Number = $this.GetSerialNumber()
-            $this.Device_Type = $this.GetDeviceType()
+            do {
+                $this.Serial_Number = $this.GetSerialNumber()
+            } while (!$this.GetYesNo())
+            do {
+                $this.Device_Type = $this.GetDeviceType()
+            } while (!$this.GetYesNo())
 
             # Begin inspection of the device type
             
@@ -320,11 +324,11 @@ class V6 : Spectrum
             Set-Clipboard -Value $resultsForClipboard
             
             De-Dent "           
-            $([Environment]::NewLine) ** Copied results to clipboard. 
+            `n** Copied results to clipboard. 
             You may begin another inspection" | Out-String
 
             if (!$this.GetYesNo()) {
-                "$([Environment]::NewLine)** Exiting" | Out-String
+                "`n** Exiting" | Out-String
                 exit
             }
         }
@@ -487,7 +491,7 @@ function Main
     {
         { [Version]::V6 } 
             { 
-                "$([Environment]::NewLine)** Creating new V6 Infusion Device Instance" | Out-String
+                "`n** Creating new V6 Infusion Device Instance" | Out-String
                 $v6 = [V6]::New()
                 $v6.Start()
             }
