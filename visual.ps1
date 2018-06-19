@@ -6,6 +6,13 @@
 using namespace System.Collections
 
 
+if ($PSVersionTable.PSVersion.Major > 5)
+{
+    # Set-ClipboardText is a dependency on PS core
+    Set-Alias Set-Clipboard Set-ClipboardText
+}
+
+
 $welcome = "
     ____             __  
    / __ )____ __  __/ /____  _____
@@ -322,7 +329,7 @@ class V6 : Spectrum
             Write-Host "`n** Beginning Visual Inspection of SN $($this.Serial_Number)"
             
             # Copy results of visual inspection to clipboard
-            Set-Clipboard -Value $resultsForClipboard
+            Set-Clipboard $resultsForClipboard
             
             De-Dent "           
             `n** Copied results to clipboard. 
